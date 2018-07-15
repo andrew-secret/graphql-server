@@ -9,8 +9,11 @@ const {
     GraphQLString,
     GraphQLInt,
     GraphQLBoolean,
-    GraphQLID
+    GraphQLID,
+    GraphQLNonNull,
 } = require('graphql');
+
+const { getVideoById } = require('./src/data');
 
 const PORT = process.env.PORT || 3000;
 const server = express();
@@ -43,15 +46,16 @@ const queryType = new GraphQLObjectType({
     description: 'The root query type',
     fields: {
         video: {
-            type: videoType,   
-            resolve: () => new Promise((resolve) => {
-                resolve({
-                    id: '1',
-                    title: 'Gravity Falls',
-                    duration: 1337,
-                    watched: true,
-                });
-            }),
+            type: videoType,
+            args: {
+                id: {
+                    type: new GraphQLNonNull(GraphQLID),
+                    description: 'ID of the video',
+                }
+            },
+            resolve: (_, args) => {
+                return getVideoById(args.id);
+            },
         },
     },
 });
